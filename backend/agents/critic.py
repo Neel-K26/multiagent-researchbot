@@ -3,17 +3,21 @@ import logging
 import os
 from typing import Any, Dict
 
-from crewai import Agent, Crew, Process, Task
-from langchain_google_genai import ChatGoogleGenerativeAI
+from crewai import LLM, Agent, Crew, Process, Task
 
 logger = logging.getLogger(__name__)
 
 
-def build_critic_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
-        google_api_key=os.environ["GEMINI_API_KEY"],
+def build_critic_llm() -> LLM:
+    # gemini-1.5-flash and gemini-2.5-flash are both retired/blocked for this
+    # account; gemini-flash-latest is Google's forward-compatible alias for
+    # the current flash-tier model, avoiding another hardcoded-version 404.
+    return LLM(
+        model="gemini/gemini-flash-latest",
+        api_key=os.environ["GEMINI_API_KEY"],
         temperature=0.2,
+        num_retries=8,
+        retry_strategy="exponential_backoff_retry",
     )
 
 

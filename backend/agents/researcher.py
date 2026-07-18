@@ -3,9 +3,8 @@ import logging
 import os
 from typing import Any, Dict, List
 
-from crewai import Agent, Crew, Process, Task
+from crewai import LLM, Agent, Crew, Process, Task
 from crewai.tools import tool
-from langchain_groq import ChatGroq
 
 from tools.arxiv_tool import search_arxiv
 from tools.web_search_tool import search_web
@@ -27,11 +26,16 @@ def web_search_tool_fn(query: str) -> str:
     return json.dumps(search_web(query, max_results=5))
 
 
-def build_researcher_llm() -> ChatGroq:
-    return ChatGroq(
-        model_name="llama-3.1-8b-instant",
-        groq_api_key=os.environ["GROQ_API_KEY"],
+def build_researcher_llm() -> LLM:
+    # llama-3.3-70b-versatile: the researcher agents are the only ones doing
+    # ReAct-style tool calling, and llama-3.1-8b-instant frequently garbled the
+    # Action/Final-Answer format under that load, triggering retry storms.
+    return LLM(
+        model="groq/llama-3.3-70b-versatile",
+        api_key=os.environ["GROQ_API_KEY"],
         temperature=0.3,
+        num_retries=8,
+        retry_strategy="exponential_backoff_retry",
     )
 
 

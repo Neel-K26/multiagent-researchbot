@@ -85,14 +85,14 @@ def build_graph():
 
     graph.add_node("plan", plan_node)
     graph.add_node("research_parallel", research_parallel_node)
-    graph.add_node("critique", critique_node)
+    graph.add_node("review", critique_node)
     graph.add_node("write", write_node)
 
     graph.set_entry_point("plan")
     graph.add_edge("plan", "research_parallel")
-    graph.add_edge("research_parallel", "critique")
+    graph.add_edge("research_parallel", "review")
     graph.add_conditional_edges(
-        "critique",
+        "review",
         route_after_critique,
         {"research_parallel": "research_parallel", "write": "write"},
     )

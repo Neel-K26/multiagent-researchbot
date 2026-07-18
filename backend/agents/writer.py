@@ -3,17 +3,18 @@ import logging
 import os
 from typing import Any, Dict
 
-from crewai import Agent, Crew, Process, Task
-from langchain_groq import ChatGroq
+from crewai import LLM, Agent, Crew, Process, Task
 
 logger = logging.getLogger(__name__)
 
 
-def build_writer_llm() -> ChatGroq:
-    return ChatGroq(
-        model_name="llama-3.1-8b-instant",
-        groq_api_key=os.environ["GROQ_API_KEY"],
+def build_writer_llm() -> LLM:
+    return LLM(
+        model="groq/llama-3.1-8b-instant",
+        api_key=os.environ["GROQ_API_KEY"],
         temperature=0.4,
+        num_retries=8,
+        retry_strategy="exponential_backoff_retry",
     )
 
 
