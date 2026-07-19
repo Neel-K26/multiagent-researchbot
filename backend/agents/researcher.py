@@ -27,9 +27,12 @@ def web_search_tool_fn(query: str) -> str:
 
 
 def build_researcher_llm() -> LLM:
-    # llama-3.3-70b-versatile: the researcher agents are the only ones doing
-    # ReAct-style tool calling, and llama-3.1-8b-instant frequently garbled the
-    # Action/Final-Answer format under that load, triggering retry storms.
+    # Reverted from deepseek/deepseek-chat: that account has insufficient
+    # balance, and litellm's retry wrapper doesn't distinguish permanent
+    # errors (billing) from transient ones (rate limits), so a billing
+    # failure just burns through all 8 retries with backoff every call.
+    # llama-3.3-70b-versatile is confirmed working end-to-end for the
+    # researcher agents' ReAct tool-calling.
     return LLM(
         model="groq/llama-3.3-70b-versatile",
         api_key=os.environ["GROQ_API_KEY"],
