@@ -27,16 +27,14 @@ def web_search_tool_fn(query: str) -> str:
 
 
 def build_researcher_llm() -> LLM:
-    # NVIDIA Build (OpenAI-compatible) via litellm's generic "openai/" +
-    # base_url routing — kept as a crewai.LLM, not langchain_openai.ChatOpenAI,
-    # for the same reason as the Groq/Gemini/DeepSeek builders: CrewAI's Agent
-    # extracts raw attributes off non-LLM objects instead of calling them,
-    # which silently drops auth/base_url and breaks routing.
+    # Reverted from NVIDIA Build (deepseek-v4-pro): rate-limited (429) under
+    # this pipeline's request volume, with backoff insufficient to clear it.
+    # llama-3.3-70b-versatile is the proven-working config for these agents'
+    # ReAct tool-calling.
     return LLM(
-        model="openai/deepseek-ai/deepseek-v4-pro",
-        api_key=os.environ["NVIDIA_API_KEY"],
-        base_url="https://integrate.api.nvidia.com/v1",
-        temperature=0.1,
+        model="groq/llama-3.3-70b-versatile",
+        api_key=os.environ["GROQ_API_KEY"],
+        temperature=0.3,
         timeout=120,
         num_retries=8,
         retry_strategy="exponential_backoff_retry",
