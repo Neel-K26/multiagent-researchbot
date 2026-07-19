@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Writer's Sanctuary — MultiAgent ResearchBot</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E4C978;
+    --gold-dim: #8a7238;
+    --dark-deepest: #0d0700;
+    --dark-brown: #1a0f00;
+    --dark-brown-2: #2a1800;
+    --dark-brown-3: #3a230a;
+    --parchment: #F5E6C8;
+    --parchment-2: #E8D5A3;
+    --parchment-3: #D4B896;
+    --ink: #2a1c0f;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark-deepest);
+    color: var(--parchment);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  img, svg { display: block; max-width: 100%; }
+
+  ::selection { background: var(--gold); color: var(--dark-deepest); }
+
+  /* ---------- wood texture background ---------- */
+  .wood-bg {
+    position: relative;
+    background-color: var(--dark-brown);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(58,35,10,0.55), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 30%, rgba(42,24,0,0.6), transparent 55%),
+      radial-gradient(ellipse 70% 60% at 50% 90%, rgba(13,7,0,0.7), transparent 60%),
+      repeating-linear-gradient(
+        92deg,
+        rgba(0,0,0,0.12) 0px,
+        rgba(0,0,0,0.05) 2px,
+        transparent 6px,
+        rgba(201,168,76,0.02) 9px,
+        transparent 14px
+      ),
+      linear-gradient(160deg, #150c00 0%, #1a0f00 40%, #120a00 100%);
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      radial-gradient(rgba(0,0,0,0.15) 1px, transparent 1px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
+
+  /* ---------- scrollbar ---------- */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--dark-deepest); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 6px; }
+
+  /* ================= NAVBAR ================= */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 4vw;
+    background: rgba(13, 7, 0, 0.88);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.02em;
+  }
+
+  .nav-logo svg { width: 26px; height: 26px; }
+
+  .nav-links {
+    display: flex;
+    gap: 2.2rem;
+    font-size: 0.92rem;
+    letter-spacing: 0.03em;
+  }
+
+  .nav-links a {
+    color: var(--parchment-3);
+    position: relative;
+    padding-bottom: 4px;
+    transition: color 0.25s ease;
+  }
+
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 100%;
+    bottom: 0;
+    height: 1px;
+    background: var(--gold);
+    transition: right 0.3s ease;
+  }
+
+  .nav-links a:hover { color: var(--gold-light); }
+  .nav-links a:hover::after { right: 0; }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    color: var(--dark-deepest);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.65rem 1.35rem;
+    border-radius: 3px;
+    border: 1px solid var(--gold-light);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: var(--font-body);
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201, 168, 76, 0.35);
+  }
+
+  .nav-cta { display: none; }
+  @media (min-width: 760px) { .nav-cta { display: inline-flex; } }
+  .nav-links { display: none; }
+  @media (min-width: 900px) { .nav-links { display: flex; } }
+
+  /* ================= HERO ================= */
+  .hero {
+    position: relative;
+    padding: 7rem 6vw 6rem;
+    text-align: center;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 55% at 50% 30%, rgba(201,168,76,0.10), transparent 70%);
+    z-index: -1;
+  }
+
+  .candle-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .candle {
+    position: relative;
+    width: 14px;
+    height: 46px;
+    background: linear-gradient(180deg, var(--parchment-2), var(--parchment-3));
+    border-radius: 3px 3px 1px 1px;
+    box-shadow: inset -3px 0 4px rgba(0,0,0,0.25);
+  }
+
+  .flame {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 22px;
+    background: radial-gradient(circle at 50% 70%, #fff6cf 0%, var(--gold-light) 35%, var(--gold) 65%, transparent 80%);
+    border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+    animation: flicker 2.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(201,168,76,0.9));
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); box-shadow: 0 0 18px 6px rgba(201,168,76,0.55); }
+    18% { opacity: 0.85; transform: translateX(-53%) scale(0.94) rotate(-3deg); }
+    36% { opacity: 1; transform: translateX(-48%) scale(1.05) rotate(2deg); box-shadow: 0 0 24px 8px rgba(201,168,76,0.7); }
+    54% { opacity: 0.9; transform: translateX(-51%) scale(0.97) rotate(-2deg); }
+    72% { opacity: 1; transform: translateX(-49%) scale(1.03) rotate(3deg); box-shadow: 0 0 20px 7px rgba(201,168,76,0.6); }
+    88% { opacity: 0.92; transform: translateX(-50%) scale(0.98) rotate(0deg); }
+  }
+
+  .eyebrow {
+    font-size: 0.8rem;
+    letter-spacing: 0.35em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 4.4rem);
+    color: var(--gold-light);
+    text-shadow: 0 2px 30px rgba(201,168,76,0.25);
+    letter-spacing: 0.02em;
+    max-width: 16ch;
+    margin: 0 auto 1.4rem;
+  }
+
+  .hero-subtitle {
+    max-width: 640px;
+    margin: 0 auto 3rem;
+    color: var(--parchment-2);
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    font-weight: 300;
+  }
+
+  .pillars {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2.2rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--gold);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+
+  .pillar svg { width: 30px; height: 30px; }
+  .pillar-divider { color: var(--gold-dim); font-size: 1.2rem; align-self: center; }
+
+  /* ================= QUERY SECTION ================= */
+  .query-section {
+    padding: 2rem 6vw 6rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .parchment-scroll {
+    position: relative;
+    max-width: 680px;
+    width: 100%;
+    padding: 3rem 3rem 2.6rem;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(255,255,255,0.35), transparent 40%),
+      radial-gradient(ellipse at 85% 80%, rgba(139,105,20,0.18), transparent 45%),
+      linear-gradient(135deg, var(--parchment) 0%, var(--parchment-2) 45%, var(--parchment-3) 100%);
+    color: var(--ink);
+    clip-path: polygon(
+      0% 3%, 2% 1%, 5% 4%, 9% 0%, 13% 3%, 17% 1%, 21% 4%, 25% 0%, 29% 2%, 33% 4%,
+      37% 1%, 41% 3%, 45% 0%, 49% 2%, 53% 4%, 57% 1%, 61% 3%, 65% 0%, 69% 2%, 73% 4%,
+      77% 1%, 81% 3%, 85% 0%, 89% 2%, 93% 4%, 97% 1%, 100% 3%,
+      100% 97%, 97% 99%, 93% 96%, 89% 100%, 85% 97%, 81% 99%, 77% 96%, 73% 100%,
+      69% 97%, 65% 99%, 61% 96%, 57% 100%, 53% 97%, 49% 99%, 45% 96%, 41% 100%,
+      37% 97%, 33% 99%, 29% 96%, 25% 100%, 21% 97%, 17% 99%, 13% 96%, 9% 100%,
+      5% 97%, 2% 99%, 0% 96%
+    );
+    box-shadow:
+      0 2px 0 0 rgba(212,184,150,0.9),
+      6px 10px 0 -4px rgba(212,184,150,0.55),
+      -6px 14px 0 -4px rgba(212,184,150,0.4),
+      0 30px 60px -10px rgba(0,0,0,0.7),
+      0 10px 30px rgba(0,0,0,0.5);
+    transform: rotate(-0.6deg);
+  }
+
+  .parchment-scroll::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(120,90,40,0.10) 1px, transparent 1px);
+    background-size: 4px 4px;
+    mix-blend-mode: multiply;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .parchment-scroll .kicker {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.8rem;
+  }
+
+  .query-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 1.4rem 0 1.6rem;
+    border-bottom: 2px solid rgba(42,28,15,0.35);
+    padding-bottom: 0.6rem;
+  }
+
+  .query-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink);
+    padding-right: 2.2rem;
+  }
+
+  .query-form input::placeholder {
+    color: rgba(42,28,15,0.55);
+    font-style: italic;
+  }
+
+  .quill-icon {
+    position: absolute;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--gold-dim);
+    pointer-events: none;
+  }
+
+  .query-actions {
+    display: flex;
+    justify-content: center;
+  }
+
+  .btn-start {
+    background: var(--dark-brown);
+    color: var(--gold-light);
+    border: 1.5px solid var(--gold);
+    padding: 0.85rem 2.4rem;
+    border-radius: 2px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-start:hover {
+    background: var(--gold);
+    color: var(--dark-deepest);
+    box-shadow: 0 8px 26px rgba(201,168,76,0.4);
+  }
+
+  .scroll-quote {
+    text-align: center;
+    margin-top: 1.8rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--gold-dim);
+    font-size: 0.92rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(42,28,15,0.2);
+  }
+
+  /* ================= SECTION SHARED ================= */
+  .section {
+    padding: 6rem 6vw;
+  }
+
+  .section-head {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 3.5rem;
+  }
+
+  .section-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.8rem;
+  }
+
+  .section-head h2 {
+    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+    color: var(--gold-light);
+  }
+
+  .section-head p {
+    margin-top: 1rem;
+    color: var(--parchment-3);
+    font-weight: 300;
+  }
+
+  /* ================= HOW IT WORKS ================= */
+  .steps-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .step-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 160px;
+    gap: 0.9rem;
+  }
+
+  .step-num {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-light);
+    background: radial-gradient(circle, rgba(201,168,76,0.12), transparent 70%);
+  }
+
+  .step-num svg { width: 24px; height: 24px; }
+
+  .step-card h3 {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .step-card p {
+    font-size: 0.82rem;
+    color: var(--parchment-3);
+    font-weight: 300;
+  }
+
+  .step-arrow {
+    color: var(--gold-dim);
+    font-size: 1.4rem;
+    align-self: center;
+    margin-top: 22px;
+  }
+
+  @media (max-width: 760px) {
+    .step-arrow { transform: rotate(90deg); margin: 0; }
+    .steps-row { flex-direction: column; align-items: center; }
+  }
+
+  /* ================= ARCHITECTURE ================= */
+  .arch-diagram {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .arch-card {
+    background: linear-gradient(160deg, var(--dark-brown-2), var(--dark-brown));
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 6px;
+    padding: 1rem 1.6rem;
+    text-align: center;
+    min-width: 200px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+
+  .arch-card .label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  .arch-card .name {
+    font-family: var(--font-display);
+    color: var(--gold-light);
+    font-size: 1.05rem;
+    margin-top: 0.2rem;
+  }
+
+  .arch-vline {
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(var(--gold-dim), var(--gold));
+    position: relative;
+  }
+
+  .arch-vline::after {
+    content: "▾";
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--gold);
+    font-size: 0.8rem;
+  }
+
+  .arch-parallel {
+    display: flex;
+    gap: 2rem;
+    padding: 1.4rem;
+    border: 1px dashed rgba(201,168,76,0.35);
+    border-radius: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .arch-loop {
+    margin-top: 2.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1.4rem;
+    border: 1px dashed var(--gold-dim);
+    border-radius: 30px;
+    color: var(--gold-dim);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+  }
+
+  .arch-loop svg { width: 18px; height: 18px; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ================= LIVE MODAL ================= */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 3, 0, 0.82);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1000;
+    padding: 4vh 4vw;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background:
+      radial-gradient(ellipse at 10% 10%, rgba(255,255,255,0.25), transparent 40%),
+      linear-gradient(160deg, var(--parchment) 0%, var(--parchment-2) 55%, var(--parchment-3) 100%);
+    color: var(--ink);
+    max-width: 780px;
+    width: 100%;
+    border-radius: 8px;
+    padding: 2.4rem 2.6rem 2.8rem;
+    position: relative;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.6);
+    margin: auto;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.4rem;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--ink);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .modal-close:hover { opacity: 1; }
+
+  .modal-box h2 {
+    font-size: 1.5rem;
+    color: var(--dark-brown);
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+
+  .modal-form { display: flex; gap: 0.7rem; margin-bottom: 1.4rem; }
+
+  .modal-form input {
+    flex: 1;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid rgba(42,28,15,0.3);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.4);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .modal-form input:focus { border-color: var(--gold-dim); }
+
+  .modal-form button {
+    background: var(--dark-brown);
+    color: var(--gold-light);
+    border: 1.5px solid var(--gold);
+    padding: 0 1.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .modal-form button:hover { background: var(--gold); color: var(--dark-deepest); }
+  .modal-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .modal-loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2.6rem 1rem;
+  }
+  .modal-loading.show { display: flex; }
+
+  .mini-candle { position: relative; width: 10px; height: 34px; background: var(--parchment-3); border-radius: 2px; }
+  .mini-flame {
+    position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+    width: 9px; height: 16px;
+    background: radial-gradient(circle at 50% 70%, #fff6cf, var(--gold-light) 40%, var(--gold) 70%, transparent 85%);
+    border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+    animation: flicker 2.6s ease-in-out infinite;
+  }
+
+  .modal-loading p {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--dark-brown);
+    font-size: 1rem;
+    text-align: center;
+    min-height: 1.4em;
+  }
+
+  .modal-error {
+    display: none;
+    background: rgba(120, 30, 20, 0.08);
+    border: 1px solid rgba(120,30,20,0.35);
+    color: #6e2418;
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .modal-error.show { display: block; }
+
+  .modal-results { display: none; flex-direction: column; gap: 1.6rem; }
+  .modal-results.show { display: flex; }
+
+  .result-block h3 {
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(42,28,15,0.2);
+    padding-bottom: 0.4rem;
+  }
+
+  .result-block p, .result-block li { font-size: 0.95rem; color: var(--ink); }
+
+  .findings-list { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .sources-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; counter-reset: src; }
+  .sources-list li { counter-increment: src; padding-left: 1.6rem; position: relative; font-size: 0.9rem; }
+  .sources-list li::before {
+    content: counter(src);
+    position: absolute; left: 0; top: 0;
+    width: 20px; height: 20px;
+    background: var(--gold);
+    color: var(--dark-deepest);
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sources-list a { color: #6b4a12; text-decoration: underline; word-break: break-all; }
+
+  .badge-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .badge {
+    background: var(--dark-brown);
+    color: var(--gold-light);
+    font-size: 0.78rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--gold-dim);
+  }
+
+  .gauge-wrap { display: flex; align-items: center; gap: 1.4rem; }
+  .gauge-wrap svg { width: 92px; height: 92px; }
+  .gauge-label { font-size: 0.85rem; color: var(--ink); }
+  .gauge-value { font-family: var(--font-display); font-size: 1.5rem; color: var(--dark-brown); }
+
+  .evidence-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .evidence-table th, .evidence-table td {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid rgba(42,28,15,0.15);
+    vertical-align: top;
+  }
+  .evidence-table th {
+    color: var(--gold-dim);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .evidence-table a { color: #6b4a12; word-break: break-all; }
+  .evidence-table-wrap { overflow-x: auto; }
+
+  /* ================= METRICS ================= */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .metric-card {
+    background: linear-gradient(160deg, var(--dark-brown-2), var(--dark-deepest));
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 8px;
+    padding: 1.6rem 1.2rem;
+    text-align: center;
+  }
+
+  .metric-card .value {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    color: var(--gold-light);
+  }
+
+  .metric-card .label {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--parchment-3);
+  }
+
+  /* ================= TECH STACK ================= */
+  .tech-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .tech-pill {
+    padding: 0.6rem 1.3rem;
+    border: 1px solid var(--gold-dim);
+    border-radius: 30px;
+    color: var(--gold-light);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    background: rgba(201,168,76,0.05);
+  }
+
+  /* ================= QUOTE ================= */
+  .quote-section { text-align: center; padding: 5rem 6vw; }
+  .quote-section blockquote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+    color: var(--gold-light);
+    max-width: 720px;
+    margin: 0 auto 1.2rem;
+    line-height: 1.5;
+  }
+  .quote-section cite {
+    color: var(--parchment-3);
+    font-size: 0.9rem;
+    font-style: normal;
+    letter-spacing: 0.04em;
+  }
+
+  /* ================= FOOTER ================= */
+  footer {
+    border-top: 1px solid rgba(201,168,76,0.2);
+    padding: 3.5rem 6vw 2.4rem;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2.4rem;
+    max-width: 1100px;
+    margin: 0 auto 2.4rem;
+  }
+
+  .footer-brand .nav-logo { margin-bottom: 0.6rem; }
+  .footer-brand p { color: var(--parchment-3); font-size: 0.85rem; max-width: 280px; font-weight: 300; }
+
+  .footer-links { display: flex; gap: 3rem; flex-wrap: wrap; }
+  .footer-links div { display: flex; flex-direction: column; gap: 0.6rem; }
+  .footer-links h4 { color: var(--gold); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.2rem; }
+  .footer-links a { color: var(--parchment-3); font-size: 0.85rem; }
+  .footer-links a:hover { color: var(--gold-light); }
+
+  .footer-socials { display: flex; gap: 1rem; }
+  .footer-socials a {
+    width: 34px; height: 34px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+  }
+  .footer-socials svg { width: 15px; height: 15px; }
+
+  .footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 1.6rem;
+    border-top: 1px solid rgba(201,168,76,0.12);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: var(--gold-dim);
+  }
+
+  @media (max-width: 640px) {
+    .parchment-scroll { padding: 2.4rem 1.6rem; }
+    .modal-box { padding: 1.8rem 1.4rem 2.2rem; }
+    .gauge-wrap { flex-direction: column; }
+  }
+</style>
+</head>
+<body class="wood-bg grain">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="navbar">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M20 3c-5 0-9 3-11 8-1.5 3.7-1 6.5-3 9 2.5-.5 5-1.5 7-3 5-2 8-6 8-11 0-1 0-2-1-3z" fill="rgba(201,168,76,0.15)"/>
+        <path d="M9 15L4 20"/>
+      </svg>
+      The Writer's Sanctuary
+    </div>
+    <div class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#about">About</a>
+    </div>
+    <button class="btn-gold nav-cta" onclick="openModal()">Begin Research →</button>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="home">
+    <div class="candle-wrap">
+      <div class="candle"><div class="flame"></div></div>
+    </div>
+    <div class="eyebrow">Multi-Agent Research Assistant</div>
+    <h1>AI-Powered Research Sanctuary</h1>
+    <p class="hero-subtitle">A council of specialized agents — planning, searching, critiquing, and writing in concert — for deep, reliable, and insightful discovery.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Search
+      </div>
+      <div class="pillar-divider">·</div>
+      <div class="pillar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2a5 5 0 015 5c0 2-1 3-1 5v2a4 4 0 01-8 0v-2c0-2-1-3-1-5a5 5 0 015-5z"/><path d="M9 21h6"/></svg>
+        Reason
+      </div>
+      <div class="pillar-divider">·</div>
+      <div class="pillar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.6 6.4L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.4-.6z"/></svg>
+        Critique
+      </div>
+      <div class="pillar-divider">·</div>
+      <div class="pillar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Synthesize
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUERY BOX ================= -->
+  <section class="query-section">
+    <div class="parchment-scroll">
+      <div class="kicker">Consult the Sanctuary</div>
+      <div class="query-form">
+        <input id="heroQuestion" type="text" placeholder="What shall we research today?" autocomplete="off">
+        <svg class="quill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M20 3c-5 0-9 3-11 8-1.5 3.7-1 6.5-3 9 2.5-.5 5-1.5 7-3 5-2 8-6 8-11 0-1 0-2-1-3z"/>
+          <path d="M9 15L4 20"/>
+        </svg>
+      </div>
+      <div class="query-actions">
+        <button class="btn-start" onclick="openModal(document.getElementById('heroQuestion').value)">Start Research →</button>
+      </div>
+      <div class="scroll-quote">"If you want to identify the truth, you have to get down to the fundamentals." — Elon Musk, on first-principles thinking</div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="section" id="how-it-works">
+    <div class="section-head">
+      <div class="section-eyebrow">The Ritual</div>
+      <h2>How It Works</h2>
+      <p>Five agents, one purpose — turning a single question into a fully-sourced report.</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <h3>1 · PLAN</h3>
+        <p>Break the question into targeted subtasks</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+        <h3>2 · RESEARCH</h3>
+        <p>Parallel arXiv + web search</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.6 6.4L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.4-.6z"/></svg></div>
+        <h3>3 · CRITIQUE</h3>
+        <p>AI reviews and suggests improvements</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></div>
+        <h3>4 · WRITE</h3>
+        <p>The Writer crafts a structured report</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></div>
+        <h3>5 · DELIVER</h3>
+        <p>Receive your complete research report</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section class="section" id="architecture">
+    <div class="section-head">
+      <div class="section-eyebrow">Beneath the Surface</div>
+      <h2>System Architecture</h2>
+      <p>A LangGraph supervisor orchestrates a CrewAI council, retrying weak research until it earns a strong verdict.</p>
+    </div>
+
+    <div class="arch-diagram">
+      <div class="arch-card"><div class="label">Input</div><div class="name">User Query</div></div>
+      <div class="arch-vline"></div>
+      <div class="arch-card"><div class="label">Agent · Groq</div><div class="name">Planner</div></div>
+      <div class="arch-vline"></div>
+      <div class="arch-parallel">
+        <div class="arch-card"><div class="label">Agent · Groq</div><div class="name">Researcher A<br>(arXiv)</div></div>
+        <div class="arch-card"><div class="label">Agent · Groq</div><div class="name">Researcher B<br>(Web)</div></div>
+      </div>
+      <div class="arch-vline"></div>
+      <div class="arch-card"><div class="label">Agent · Gemini</div><div class="name">Critic</div></div>
+      <div class="arch-vline"></div>
+      <div class="arch-card"><div class="label">Agent · Groq</div><div class="name">Writer</div></div>
+      <div class="arch-vline"></div>
+      <div class="arch-card"><div class="label">Output</div><div class="name">Final Report</div></div>
+
+      <div class="arch-loop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        Retry Loop — LangGraph Supervisor (max 3 attempts)
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= METRICS ================= -->
+  <section class="section">
+    <div class="section-head">
+      <div class="section-eyebrow">A Sample Reading</div>
+      <h2>Research Metrics</h2>
+      <p>Illustrative figures from a recent inquiry through the Sanctuary.</p>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="value">15</div><div class="label">Sources Retrieved</div></div>
+      <div class="metric-card"><div class="value">82%</div><div class="label">Evidence Strength</div></div>
+      <div class="metric-card"><div class="value">91%</div><div class="label">Consensus Score</div></div>
+      <div class="metric-card"><div class="value">85%</div><div class="label">Confidence Score</div></div>
+      <div class="metric-card"><div class="value">3</div><div class="label">Retries</div></div>
+      <div class="metric-card"><div class="value">11m</div><div class="label">Processing Time</div></div>
+    </div>
+  </section>
+
+  <!-- ================= TECH STACK ================= -->
+  <section class="section">
+    <div class="section-head">
+      <div class="section-eyebrow">Instruments of the Craft</div>
+      <h2>Technology Stack</h2>
+    </div>
+    <div class="tech-pills">
+      <span class="tech-pill">CrewAI</span>
+      <span class="tech-pill">LangGraph</span>
+      <span class="tech-pill">Groq</span>
+      <span class="tech-pill">Gemini 1.5 Flash</span>
+      <span class="tech-pill">arXiv API</span>
+      <span class="tech-pill">DuckDuckGo</span>
+      <span class="tech-pill">FastAPI</span>
+      <span class="tech-pill">React</span>
+    </div>
+  </section>
+
+  <!-- ================= QUOTE ================= -->
+  <section class="quote-section">
+    <div class="candle-wrap"><div class="candle"><div class="flame"></div></div></div>
+    <blockquote>"Research is to see what everybody else has seen, and to think what nobody else has thought."</blockquote>
+    <cite>— Albert Szent-Györgyi</cite>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer id="about">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M20 3c-5 0-9 3-11 8-1.5 3.7-1 6.5-3 9 2.5-.5 5-1.5 7-3 5-2 8-6 8-11 0-1 0-2-1-3z" fill="rgba(201,168,76,0.15)"/>
+            <path d="M9 15L4 20"/>
+          </svg>
+          The Writer's Sanctuary
+        </div>
+        <p>A quiet room for loud questions — multi-agent research, powered by CrewAI and LangGraph.</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Navigate</h4>
+          <a href="#home">Home</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#architecture">Architecture</a>
+        </div>
+        <div>
+          <h4>Project</h4>
+          <a href="https://github.com/Neel-K26/multiagent-researchbot" target="_blank" rel="noopener">GitHub</a>
+          <a href="#" onclick="openModal(); return false;">Begin Research</a>
+        </div>
+      </div>
+      <div class="footer-socials">
+        <a href="https://github.com/Neel-K26/multiagent-researchbot" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 016 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .3z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 The Writer's Sanctuary</span>
+      <span>Built with CrewAI · LangGraph · Groq · Gemini</span>
+    </div>
+  </footer>
+
+  <!-- ================= LIVE RESEARCH MODAL ================= -->
+  <div class="modal-overlay" id="researchModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      <h2>Consult the Agents</h2>
+
+      <div class="modal-form">
+        <input id="modalQuestion" type="text" placeholder="What shall we research today?">
+        <button id="modalSubmit" onclick="submitResearch()">Submit</button>
+      </div>
+
+      <div class="modal-error" id="modalError"></div>
+
+      <div class="modal-loading" id="modalLoading">
+        <div class="mini-candle"><div class="mini-flame"></div></div>
+        <p id="modalLoadingText">Agents researching…</p>
+      </div>
+
+      <div class="modal-results" id="modalResults">
+        <div class="result-block">
+          <h3>Research Question</h3>
+          <p id="resQuestion"></p>
+        </div>
+        <div class="result-block">
+          <h3>Abstract</h3>
+          <p id="resSummary"></p>
+        </div>
+        <div class="result-block">
+          <h3>Key Findings</h3>
+          <ul class="findings-list" id="resFindings"></ul>
+        </div>
+        <div class="result-block">
+          <h3>Top Sources</h3>
+          <ul class="sources-list" id="resSources"></ul>
+        </div>
+        <div class="result-block">
+          <div class="badge-row">
+            <div class="gauge-wrap">
+              <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" stroke="#2a1800" stroke-width="10" fill="none" opacity="0.15"/>
+                <circle id="gaugeRing" cx="60" cy="60" r="52" stroke="#8a7238" stroke-width="10" fill="none"
+                        stroke-dasharray="326.7" stroke-dashoffset="326.7"
+                        stroke-linecap="round" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div>
+                <div class="gauge-value" id="gaugeValue">—</div>
+                <div class="gauge-label">Confidence Score</div>
+              </div>
+            </div>
+            <span class="badge" id="resRetry">Retries: —</span>
+            <span class="badge" id="resStatus">Status: —</span>
+          </div>
+        </div>
+        <div class="result-block">
+          <h3>Evidence</h3>
+          <div class="evidence-table-wrap">
+            <table class="evidence-table">
+              <thead><tr><th>Title</th><th>Source</th><th>Snippet</th></tr></thead>
+              <tbody id="resEvidence"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Standalone static page — swap this after deploying the backend to Render.
+  const API = 'https://your-render-url.onrender.com/api';
+
+  const overlay = document.getElementById('researchModal');
+  const modalQuestion = document.getElementById('modalQuestion');
+  const modalSubmit = document.getElementById('modalSubmit');
+  const modalError = document.getElementById('modalError');
+  const modalLoading = document.getElementById('modalLoading');
+  const modalLoadingText = document.getElementById('modalLoadingText');
+  const modalResults = document.getElementById('modalResults');
+
+  let loadingTimers = [];
+
+  function openModal(prefill) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    resetModal();
+    if (prefill) modalQuestion.value = prefill;
+    modalQuestion.focus();
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    clearLoadingTimers();
+  }
+
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  modalQuestion.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitResearch(); });
+
+  function resetModal() {
+    modalError.classList.remove('show');
+    modalError.textContent = '';
+    modalLoading.classList.remove('show');
+    modalResults.classList.remove('show');
+    modalSubmit.disabled = false;
+    clearLoadingTimers();
+  }
+
+  function clearLoadingTimers() {
+    loadingTimers.forEach(clearTimeout);
+    loadingTimers = [];
+  }
+
+  function deriveTitle(url) {
+    try {
+      if (url.includes('arxiv.org')) return 'arXiv Paper';
+      const host = new URL(url).hostname.replace('www.', '');
+      return host.charAt(0).toUpperCase() + host.slice(1);
+    } catch (e) {
+      return 'Source';
+    }
+  }
+
+  async function submitResearch() {
+    const question = modalQuestion.value.trim();
+    if (!question) { modalQuestion.focus(); return; }
+
+    modalError.classList.remove('show');
+    modalResults.classList.remove('show');
+    modalLoading.classList.add('show');
+    modalSubmit.disabled = true;
+    modalLoadingText.textContent = 'Agents researching…';
+
+    clearLoadingTimers();
+    loadingTimers.push(setTimeout(() => {
+      modalLoadingText.textContent = 'Agents are thinking deeply…';
+    }, 30000));
+    loadingTimers.push(setTimeout(() => {
+      modalLoadingText.textContent = 'Almost there…';
+    }, 60000));
+
+    try {
+      const res = await fetch(`${API}/research`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`The Sanctuary's server responded with an error (HTTP ${res.status}).`);
+      }
+
+      const data = await res.json();
+      renderResults(question, data);
+    } catch (err) {
+      clearLoadingTimers();
+      modalLoading.classList.remove('show');
+      modalSubmit.disabled = false;
+      modalError.textContent = err && err.name === 'TypeError'
+        ? "The sanctuary's messenger could not reach the agents. Please verify the backend is running and reachable."
+        : (err.message || 'Something went wrong while consulting the agents.');
+      modalError.classList.add('show');
+    }
+  }
+
+  function renderResults(question, data) {
+    clearLoadingTimers();
+    modalLoading.classList.remove('show');
+    modalSubmit.disabled = false;
+
+    const report = data.report || {};
+    const sources = Array.isArray(data.sources) ? data.sources : [];
+    const critique = data.critique || {};
+
+    document.getElementById('resQuestion').textContent = question;
+    document.getElementById('resSummary').textContent = report.summary || 'No summary was returned.';
+
+    const findingsEl = document.getElementById('resFindings');
+    findingsEl.innerHTML = '';
+    (report.key_findings || []).forEach((f) => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      findingsEl.appendChild(li);
+    });
+    if (!report.key_findings || report.key_findings.length === 0) {
+      findingsEl.innerHTML = '<li>No key findings were returned.</li>';
+    }
+
+    const sourcesEl = document.getElementById('resSources');
+    sourcesEl.innerHTML = '';
+    sources.forEach((s) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = s; a.target = '_blank'; a.rel = 'noopener'; a.textContent = s;
+      li.appendChild(a);
+      sourcesEl.appendChild(li);
+    });
+    if (sources.length === 0) sourcesEl.innerHTML = '<li>No sources were returned.</li>';
+
+    const confidence = typeof report.confidence_score === 'number' ? report.confidence_score : null;
+    const circumference = 326.7;
+    const ring = document.getElementById('gaugeRing');
+    const gaugeValue = document.getElementById('gaugeValue');
+    if (confidence !== null) {
+      const pct = Math.max(0, Math.min(1, confidence));
+      ring.setAttribute('stroke-dashoffset', circumference * (1 - pct));
+      ring.setAttribute('stroke', '#C9A84C');
+      gaugeValue.textContent = Math.round(pct * 100) + '%';
+    } else {
+      ring.setAttribute('stroke-dashoffset', circumference);
+      gaugeValue.textContent = '—';
+    }
+
+    document.getElementById('resRetry').textContent = `Retries: ${data.retry_count ?? '—'}`;
+    document.getElementById('resStatus').textContent = `Status: ${data.status || critique.verdict || '—'}`;
+
+    const evidenceEl = document.getElementById('resEvidence');
+    evidenceEl.innerHTML = '';
+    sources.slice(0, 10).forEach((s) => {
+      const item = typeof s === 'string' ? { title: deriveTitle(s), url: s, snippet: '—' } : s;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.title || 'Source'}</td>
+        <td><a href="${item.url}" target="_blank" rel="noopener">${item.url}</a></td>
+        <td>${item.snippet || '—'}</td>
+      `;
+      evidenceEl.appendChild(tr);
+    });
+    if (sources.length === 0) {
+      evidenceEl.innerHTML = '<tr><td colspan="3">No evidence returned.</td></tr>';
+    }
+
+    modalResults.classList.add('show');
+  }
+</script>
+</body>
+</html>
