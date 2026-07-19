@@ -16,6 +16,7 @@ def build_critic_llm() -> LLM:
         model="gemini/gemini-flash-latest",
         api_key=os.environ["GEMINI_API_KEY"],
         temperature=0.2,
+        timeout=120,
         num_retries=8,
         retry_strategy="exponential_backoff_retry",
     )

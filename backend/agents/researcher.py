@@ -27,16 +27,17 @@ def web_search_tool_fn(query: str) -> str:
 
 
 def build_researcher_llm() -> LLM:
-    # Reverted from deepseek/deepseek-chat: that account has insufficient
-    # balance, and litellm's retry wrapper doesn't distinguish permanent
-    # errors (billing) from transient ones (rate limits), so a billing
-    # failure just burns through all 8 retries with backoff every call.
-    # llama-3.3-70b-versatile is confirmed working end-to-end for the
-    # researcher agents' ReAct tool-calling.
+    # NVIDIA Build (OpenAI-compatible) via litellm's generic "openai/" +
+    # base_url routing — kept as a crewai.LLM, not langchain_openai.ChatOpenAI,
+    # for the same reason as the Groq/Gemini/DeepSeek builders: CrewAI's Agent
+    # extracts raw attributes off non-LLM objects instead of calling them,
+    # which silently drops auth/base_url and breaks routing.
     return LLM(
-        model="groq/llama-3.3-70b-versatile",
-        api_key=os.environ["GROQ_API_KEY"],
-        temperature=0.3,
+        model="openai/deepseek-ai/deepseek-v4-pro",
+        api_key=os.environ["NVIDIA_API_KEY"],
+        base_url="https://integrate.api.nvidia.com/v1",
+        temperature=0.1,
+        timeout=120,
         num_retries=8,
         retry_strategy="exponential_backoff_retry",
     )

@@ -9,10 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 def build_planner_llm() -> LLM:
+    # NVIDIA Build (OpenAI-compatible) via litellm's generic "openai/" +
+    # base_url routing — see agents/researcher.py for why this is a
+    # crewai.LLM rather than langchain_openai.ChatOpenAI.
     return LLM(
-        model="groq/llama-3.1-8b-instant",
-        api_key=os.environ["GROQ_API_KEY"],
-        temperature=0.3,
+        model="openai/deepseek-ai/deepseek-v4-pro",
+        api_key=os.environ["NVIDIA_API_KEY"],
+        base_url="https://integrate.api.nvidia.com/v1",
+        temperature=0.1,
+        timeout=120,
         num_retries=8,
         retry_strategy="exponential_backoff_retry",
     )
