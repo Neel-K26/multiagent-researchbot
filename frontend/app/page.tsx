@@ -65,6 +65,12 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
+        <a
+          href="/sanctuary.html"
+          className="w-fit text-xs font-medium text-neutral-500 underline-offset-2 hover:underline dark:text-neutral-400"
+        >
+          ← Visit the Writer&apos;s Sanctuary
+        </a>
         <h1 className="text-2xl font-semibold tracking-tight">MultiAgent ResearchBot</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Ask a research question. A planner, two researchers, a critic, and a writer agent
