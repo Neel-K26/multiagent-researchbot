@@ -1208,6 +1208,41 @@
     }
   }
 
+  async function postResearch(question) {
+    const res = await fetch(`${API}/research`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`The Sanctuary's server responded with an error (HTTP ${res.status}).`);
+    }
+
+    return res.json();
+  }
+
+  // Render's free tier sleeps the backend after inactivity. Waking it can
+  // occasionally drop the very first connection instead of just being slow,
+  // which surfaces as a fast TypeError from fetch(). A real full research
+  // call can legitimately take minutes once connected, so we can't use a
+  // short timeout to detect problems — instead, treat an EARLY TypeError
+  // (fails within 15s) as a probable cold-start hiccup and retry once.
+  async function fetchResearchWithRetry(question) {
+    const start = Date.now();
+    try {
+      return await postResearch(question);
+    } catch (err) {
+      const elapsed = Date.now() - start;
+      if (err instanceof TypeError && elapsed < 15000) {
+        modalLoadingText.textContent = "Waking up the sanctuary's servers… retrying";
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        return await postResearch(question);
+      }
+      throw err;
+    }
+  }
+
   async function submitResearch() {
     const question = modalQuestion.value.trim();
     if (!question) { modalQuestion.focus(); return; }
@@ -1227,24 +1262,14 @@
     }, 60000));
 
     try {
-      const res = await fetch(`${API}/research`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`The Sanctuary's server responded with an error (HTTP ${res.status}).`);
-      }
-
-      const data = await res.json();
+      const data = await fetchResearchWithRetry(question);
       renderResults(question, data);
     } catch (err) {
       clearLoadingTimers();
       modalLoading.classList.remove('show');
       modalSubmit.disabled = false;
       modalError.textContent = err && err.name === 'TypeError'
-        ? "The sanctuary's messenger could not reach the agents. Please verify the backend is running and reachable."
+        ? "The sanctuary's messenger could not reach the agents — the backend may be asleep (free hosting tier) or briefly unreachable. Please wait a moment and try again."
         : (err.message || 'Something went wrong while consulting the agents.');
       modalError.classList.add('show');
     }
