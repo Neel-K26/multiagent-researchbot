@@ -54,18 +54,12 @@
     position: relative;
     background-color: var(--dark-brown);
     background-image:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(58,35,10,0.55), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 85% 30%, rgba(42,24,0,0.6), transparent 55%),
-      radial-gradient(ellipse 70% 60% at 50% 90%, rgba(13,7,0,0.7), transparent 60%),
-      repeating-linear-gradient(
-        92deg,
-        rgba(0,0,0,0.12) 0px,
-        rgba(0,0,0,0.05) 2px,
-        transparent 6px,
-        rgba(201,168,76,0.02) 9px,
-        transparent 14px
-      ),
-      linear-gradient(160deg, #150c00 0%, #1a0f00 40%, #120a00 100%);
+      linear-gradient(rgba(10, 5, 0, 0.75), rgba(10, 5, 0, 0.85)),
+      url('/sanctuary-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   .grain::after {
@@ -581,9 +575,10 @@
   .modal-overlay.open { display: flex; }
 
   .modal-box {
-    background:
-      radial-gradient(ellipse at 10% 10%, rgba(255,255,255,0.25), transparent 40%),
-      linear-gradient(160deg, var(--parchment) 0%, var(--parchment-2) 55%, var(--parchment-3) 100%);
+    background-image: url('/parchment-scroll.jpeg');
+    background-size: cover;
+    background-position: center;
+    border: none;
     color: var(--ink);
     max-width: 780px;
     width: 100%;
@@ -622,10 +617,10 @@
     padding: 0.85rem 1rem;
     border: 1.5px solid rgba(42,28,15,0.3);
     border-radius: 4px;
-    background: rgba(255,255,255,0.4);
+    background: rgba(245, 230, 200, 0.6);
     font-family: var(--font-body);
     font-size: 0.95rem;
-    color: var(--ink);
+    color: #2a1000;
     outline: none;
   }
 
