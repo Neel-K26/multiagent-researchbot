@@ -35,7 +35,7 @@ The result is a structured research report containing:
 
 **Website**
 
-https://multiagent-researchbot.vercel.app
+https://multiagent-researchbot.vercel.app/sanctuary.html
 
 **Source Code**
 
